@@ -739,7 +739,6 @@ async def delete_weybills(message: types.Message, state: FSMContext):
     now = datetime.datetime.strptime(now, '%d-%m-%Y')
     if (now < until) == True:
         print("Подписка активна")
-        sql.db.close()
         pass
     else:
         await message.answer("Ваша подписка истекла, обратитесь к администратору что бы продлить подписку",
@@ -752,8 +751,6 @@ async def delete_weybills(message: types.Message, state: FSMContext):
     url_login = 'https://art.taxi.mos.ru/login'
     url_waybills = 'https://art.taxi.mos.ru/waybills'
 
-    sql = DateBase()
-
     sql.cur.execute(f"SELECT phone_number FROM users WHERE id = '{message.from_user.id}'")
     phone_nubmer = sql.cur.fetchone()[0]
     sql.cur.execute(f"SELECT password FROM users WHERE id = '{message.from_user.id}'")
@@ -762,7 +759,7 @@ async def delete_weybills(message: types.Message, state: FSMContext):
     name = sql.cur.fetchone()[0]
 
     stat = datetime.timedelta(hours=12)
-    sql = DateBase()
+    cheat = datetime.timedelta(hours=13)
     sql.cur.execute(f"SELECT end_at FROM users WHERE id = '{message.from_user.id}'")
     end_time = datetime.datetime.strptime(sql.cur.fetchone()[0], '%Y-%m-%d %H:%M:%S.%f')
     now_time = datetime.datetime.now()
@@ -770,6 +767,7 @@ async def delete_weybills(message: types.Message, state: FSMContext):
     if (delta > stat) == True:
         print("Пользователь отдохнул")
         await message.answer("С последней смены прошло более 12 часов", reply_markup=kb.menu)
+        return
     else:
         print("Пользователь не отдыхал 12 часов")
         # Авторизация в Парке
@@ -798,7 +796,10 @@ async def delete_weybills(message: types.Message, state: FSMContext):
         await message.answer("Путевой лист удален", reply_markup=kb.menu)
         await state.finish()
         web.browser.quit()
+        sql.cur.execute(f"UPDATE users SET end_at = '{end_time - cheat}' WHERE id = '{message.from_user.id}'")
+        sql.db.commit()
         sql.db.close()
+
 
 async def cmd_cancel(message: types.Message, state: FSMContext):
     sql = DateBase()

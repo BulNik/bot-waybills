@@ -9,6 +9,7 @@ but_cancel = KeyboardButton("Отменить")
 but_delete = KeyboardButton("Удалить лист")
 but_create = KeyboardButton("Создать путевой лист")
 but_inspect = KeyboardButton("Пройти предрейсоввый осмотр")
+probeg = KeyboardButton("Пробег")
 
 
 

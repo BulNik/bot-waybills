@@ -30,7 +30,7 @@ class States(StatesGroup):
     wait_end_weybills = State()
     wait_delete_waybill_befor = State()
     wait_delete_waybill_force = State()
-
+    wait_check_ip = State()
 
     wait_start_ip = State()
     wait_start_org = State()
@@ -44,32 +44,32 @@ class States(StatesGroup):
     Проверки 
 """
 async def check_id(user_id, user_name):
-    logger.info(f"Функцию {__name__} вызвал {user_name} в {time.strftime('%X')}")
+    logger.info(f"Функцию {check_id.__name__} вызвал {user_name} в {time.strftime('%X')}")
     sql = DateBase()
     print(user_id)
     res = await sql.select_item_where_id("users", "id", user_id)
     sql.db.close()
     if res is None:
-        logger.info(f"Функция {__name__} завершена {user_name} в {time.strftime('%X')}")
+        logger.info(f"Функция {check_id.__name__} завершена {user_name} в {time.strftime('%X')}")
         return None
     else:
-        logger.info(f"Функция {__name__} завершена {user_name} в {time.strftime('%X')}")
+        logger.info(f"Функция {check_id.__name__} завершена {user_name} в {time.strftime('%X')}")
         return True
 
 async def check_name(name, user_name ):
-    logger.info(f"Функцию {__name__} вызвал {user_name} в {time.strftime('%X')}")
+    logger.info(f"Функцию {check_name.__name__} вызвал {user_name} в {time.strftime('%X')}")
     sql = DateBase()
     res = await sql.select_item_where_name("users", "name", name)
     sql.db.close()
     if res is None:
-        logger.info(f"Функция {__name__} завершена {user_name} в {time.strftime('%X')}")
+        logger.info(f"Функция {check_name.__name__} завершена {user_name} в {time.strftime('%X')}")
         return None
     else:
-        logger.info(f"Функция {__name__} завершена {user_name} в {time.strftime('%X')}")
+        logger.info(f"Функция {check_name.__name__} завершена {user_name} в {time.strftime('%X')}")
         return True
 
 async def check_sub(user_id, user_name):
-    logger.info(f"Функцию {__name__} вызвал {user_name} в {time.strftime('%X')}")
+    logger.info(f"Функцию {check_sub.__name__} вызвал {user_name} в {time.strftime('%X')}")
     sql = DateBase()
     #res = await sql.select_item_where_id("users", "until", user_id)
     now = datetime.datetime.now().strftime('%d-%m-%Y')
@@ -78,64 +78,68 @@ async def check_sub(user_id, user_name):
     sql.db.close()
 
     if now < until:
-        logger.info(f"Функция {__name__} завершена {user_name} в {time.strftime('%X')}")
+        logger.info(f"Функция {check_sub.__name__} завершена {user_name} в {time.strftime('%X')}")
         return True
     else:
-        logger.info(f"Функция {__name__} завершена {user_name} в {time.strftime('%X')}")
+        logger.info(f"Функция {check_sub.__name__} завершена {user_name} в {time.strftime('%X')}")
         return False
 
 async def check_status(user_id, user_name):
-    logger.info(f"Функцию {__name__} вызвал {user_name} в {time.strftime('%X')}")
+    logger.info(f"Функцию {check_status.__name__} вызвал {user_name} в {time.strftime('%X')}")
     sql = DateBase()
     res = await sql.select_item_where_id("users", "status", user_id)
     sql.db.close()
     if str(res) == "true":
-        logger.info(f"Функция {__name__} завершена {user_name} в {time.strftime('%X')}")
+        logger.info(f"Функция {check_status.__name__} завершена {user_name} в {time.strftime('%X')}")
         return True
     elif str(res) == "false":
-        logger.info(f"Функция {__name__} завершена {user_name} в {time.strftime('%X')}")
-        return True
+        logger.info(f"Функция {check_status.__name__} завершена {user_name} в {time.strftime('%X')}")
+        return False
 
 async def check_time(user_id, user_name):
-    logger.info(f"Функцию {__name__} вызвал {user_name} в {time.strftime('%X')}")
+    logger.info(f"Функцию {check_time.__name__} вызвал {user_name} в {time.strftime('%X')}")
+    logger.info("Проверка времени")
     stat = datetime.timedelta(hours=12)
     now_time = datetime.datetime.now()
     sql = DateBase()
     end_time = datetime.datetime.strptime(await sql.select_item_where_id("users", "end_at", user_id), '%Y-%m-%d %H:%M:%S.%f')
+    logger.info(f"Время {end_time}")
     sql.db.close()
     delta = now_time - end_time
     if (delta > stat) == True:
-        logger.info(f"Функция {__name__} завершена {user_name} в {time.strftime('%X')}")
+        logger.info(f"{check_time.__name__} Прошло более 12 часов {user_name} в {time.strftime('%X')}")
         return True
     else:
-        logger.info(f"Функция {__name__} завершена {user_name} в {time.strftime('%X')}")
+        logger.info(f"{check_time.__name__} Прошло менее 12 часов {user_name} в {time.strftime('%X')}")
         return False
 
 async def check_web_auth_park(web, user_name):
     if await web.resource_check("MuiTypography-root MuiTypography-body1", "Неверное имя пользователя или пароль") == False:
-        logger.info(f"Удачная авторизация в ЛК Парка пользователя {user_name}")
+        logger.info(f"{check_web_auth_park.__name__} Удачная авторизация в ЛК Парка пользователя {user_name}")
         return True
     elif await web.resource_check("MuiTypography-root MuiTypography-body1", "Неверное имя пользователя или пароль") == True:
-        logger.info(f"Не удалось авторизоваться в ЛК Парка пользователя {user_name}, неверное имя пользователя или пароль ")
+        logger.info(f"{check_web_auth_park.__name__} Не удалось авторизоваться в ЛК Парка пользователя {user_name}, неверное имя пользователя или пароль ")
         return False
 
 async def check_web_auth_med(web, user_name):
     if await web.resource_check("MuiTypography-root MuiTypography-body1", "Неверное имя пользователя или пароль") == False:
-        logger.info(f"Удачная авторизация в ЛК Медика {user_name}")
+        logger.info(f"{check_web_auth_med.__name__} Удачная авторизация в ЛК Медика {user_name}")
         return True
     elif await web.resource_check("MuiTypography-root MuiTypography-body1", "Неверное имя пользователя или пароль") == True:
-        logger.info(f"Не удалось авторизоваться в ЛК Медика {user_name}, неверное имя пользователя или пароль ")
+        logger.info(f"{check_web_auth_med.__name__} Не удалось авторизоваться в ЛК Медика {user_name}, неверное имя пользователя или пароль ")
         return False
 
 async def check_web_auth_mech(web, user_name):
     if await web.resource_check("MuiTypography-root MuiTypography-body1", "Неверное имя пользователя или пароль") == False:
-        logger.info(f"Удачная авторизация в ЛК Механика  {user_name}")
+        logger.info(f"{check_web_auth_mech.__name__} Удачная авторизация в ЛК Механика  {user_name}")
         return True
     elif await web.resource_check("MuiTypography-root MuiTypography-body1", "Неверное имя пользователя или пароль") == True:
-        logger.info(f"Не удалось авторизоваться в ЛК Механика  {user_name}, неверное имя пользователя или пароль ")
+        logger.info(f"{check_web_auth_mech.__name__} Не удалось авторизоваться в ЛК Механика  {user_name}, неверное имя пользователя или пароль ")
         return False
 
 async def check_create_waybill(web, user_id, user_name):
+    logger.info(f"Функцию {check_create_waybill.__name__} вызвал {user_name} в {time.strftime('%X')}")
+
     sql = DateBase()
     # Проверка создания путевого листа
     if await web.resource_check("MuiTypography-root MuiTypography-body1", "Создан путевой лист") == True:
@@ -162,8 +166,11 @@ async def check_create_waybill(web, user_id, user_name):
         web.browser.quit()
         sql.db.close()
         return False
+    logger.info(f"Функция {check_create_waybill.__name__} завершена {user_name} в {time.strftime('%X')}")
 
 async def check_aprove_med(web_med, user_id, user_name, done_time):
+    logger.info(f"Функцию {check_aprove_med.__name__} вызвал {user_name} в {time.strftime('%X')}")
+
     if await web_med.resource_check("MuiTypography-root MuiTypography-body1", "Добавлен осмотр") == True:
         logger.info(f"Путевой лист удачно одобрен медиком {user_name}")
         #sql = DateBase()
@@ -174,8 +181,10 @@ async def check_aprove_med(web_med, user_id, user_name, done_time):
         logger.info(f"Неудалось одобрить лист медиком {user_name}")
         web_med.browser.quit()
         return False
+    logger.info(f"Функция {check_aprove_med.__name__} завершена {user_name} в {time.strftime('%X')}")
 
 async def check_aprove_mech(web_mech, user_id, user_name, done_time):
+    logger.info(f"Функцию {check_aprove_mech.__name__} вызвал {user_name} в {time.strftime('%X')}")
     if await web_mech.resource_check("MuiTypography-root MuiTypography-body1", "Добавлен осмотр") == True:
         logger.info(f"Путевой лист удачно одобрен механиком {user_name}")
         #sql = DateBase()
@@ -186,6 +195,8 @@ async def check_aprove_mech(web_mech, user_id, user_name, done_time):
         logger.info(f"Неудалось одобрить лист механиком {user_name}")
         web_mech.browser.quit()
         return False
+    logger.info(f"Функция {check_aprove_mech.__name__} завершена {user_name} в {time.strftime('%X')}")
+
 
 async def check_stat_waybill(message: types.Message, state: FSMContext):
 
@@ -509,8 +520,19 @@ async def start_change_probeg(message: types.Message, state: FSMContext):
     elif sub == True:
         pass
 
+    """
+        Проверка на открытую смену
+    """
+    sub = await check_status(message.from_user.id, message.from_user.username)
+    if sub == False:
+        await message.answer("Путевой лист открыт, закройте смену, прежде чем открывать новую", reply_markup=kb.menu)
+        await state.finish()
+        return
+    elif sub == True:
+        pass
+
     await States.wait_start_check.set()
-    await message.answer("Напишите ваш текущий пробег", reply_markup=kb.sub_menu)
+    await message.answer("Напишите ваш текущий пробег", reply_markup=kb.ReplyKeyboardRemove())
     logger.info(f"Функция {__name__} завершена {message.from_user.username} в {time.strftime('%X')}")
 
 async def start_check(message: types.Message, state: FSMContext):
@@ -518,164 +540,185 @@ async def start_check(message: types.Message, state: FSMContext):
     user_data = await state.get_data()
     probeg = user_data['probeg']
     logger.info(f"Дебаг пробег {probeg}")
-    """
-        Проверка на открытый путевой лист
-    """
-    status = await check_status(message.from_user.id, message.from_user.username)
-    if status == False:
-        await message.answer("Путевой лист открыт, закройте смену, прежде чем открывать новую")
-        await state.finish()
-        return
-    elif status == True:
-        await message.answer("Открытие смены")
-
-    # Проверка времени
-    await message.answer("Проверка времени прошедшего с последней смены", reply_markup=kb.sub_menu)
-    time = await check_time(message.from_user.id, message.from_user.username)
-    if time == True:
-        await message.answer("C последней смен прошло более 12 часов")
-        sql = DateBase()
-        logger.info(f"ахахаха {probeg}")
-        await sql.update_item_by_id("users", "probeg", probeg, message.from_user.id)
-        dogovor = await sql.select_item_where_id("users", "dogovor", message.from_user.id)
-        logger.info(f"Еще дебаг пробег {await sql.select_item_where_id('users', 'probeg', message.from_user.id)}")
-        sql.db.close()
-        if dogovor == "org":
+    sql = DateBase()
+    dogovor = await sql.select_item_where_id("users", "dogovor", message.from_user.id)
+    sql.db.close()
+    if dogovor == "ip":
+        await message.answer("Вы создали новый путевой лист в системе КИС АРТ?", reply_markup=kb.check_menu_ip)
+        await States.wait_start_ip.set()
+    elif dogovor == "org":
+        # Проверка времени
+        await message.answer("Проверка времени прошедшего с последней смены", reply_markup=kb.ReplyKeyboardRemove())
+        time = await check_time(message.from_user.id, message.from_user.username)
+        if time == True:
+            await message.answer("C последней смены прошло более 12 часов")
+            sql = DateBase()
+            await sql.update_item_by_id("users", "probeg", probeg, message.from_user.id)
+            sql.db.close()
             await message.answer("Подтвердите создание путевого листа", reply_markup=kb.sub_menu_org)
             await States.wait_start_org.set()
-        elif dogovor == "ip":
-            await message.answer("Подтвердите прохождение предрейсового осмотра", reply_markup=kb.sub_menu_ip)
-            await States.wait_start_ip.set()
-    elif status == False:
-        await message.answer("C последней смен прошло более 12 часов")
-        await States.wait_delete_waybill_befor.set()
+        elif time == False:
+            await message.answer("C последней смены не прошло более 12 часов")
+            await message.answer("Удаление предыдущего путевго листа. Ожидайте...", reply_markup=kb.ReplyKeyboardRemove())
+            res, web = await auth_park(message.from_user.id, message.from_user.username)
+            if res == False:
+                await state.finish()
+                await message.answer("Произошла ошибка при создании удалении путевого листа, повторите попытку через 1 минуту", reply_markup=kb.menu)
+                return
+            await asyncio.sleep(5)
+            await search_weybill_del(web, message.from_user.id)
+            await message.answer("Путевой лист удален")
+            await asyncio.sleep(5)
+            # обновить время
+            cheat = datetime.timedelta(hours=13)
+            sql = DateBase()
+            end_time = datetime.datetime.strptime(await sql.select_item_where_id("users", "end_at", message.from_user.id),'%Y-%m-%d %H:%M:%S.%f')
+            await sql.update_item_by_id("users", "end_at", end_time - cheat, message.from_user.id)
+            sql.db.close()
+            await message.answer("Подтвердите создание путевого листа. Ожидайте...", reply_markup=kb.sub_menu_org)
+            await States.wait_start_org.set()
 
 async def start_weybills_org(message: types.Message, state: FSMContext):
-    await message.answer("Путевой лист в процессе создания", reply_markup=kb.sub_menu)
-    sql = DateBase()
-    probeg = await sql.select_item_where_id("users", "probeg", message.from_user.id)
-    sql.db.close()
-    auth, web = await auth_park(message.from_user.id, message.from_user.username)
-    if auth == False:
-        await state.finish()
-        await message.answer("Ошибка при создании путевого листа, повторите попытку через 1 минуту")
-        return
-    await asyncio.sleep(5)
+    try:
+        await message.answer("Путевой лист в процессе создания", reply_markup=kb.ReplyKeyboardRemove())
+        sql = DateBase()
+        probeg = await sql.select_item_where_id("users", "probeg", message.from_user.id)
+        sql.db.close()
+        auth, web = await auth_park(message.from_user.id, message.from_user.username)
+        if auth == False:
+            await state.finish()
+            await message.answer("Ошибка при создании путевого листа, повторите попытку через 1 минуту", reply_markup=kb.menu)
+            return
+        await asyncio.sleep(5)
 
-    post = await create_waybill(web, message.from_user.id)
-    if post == True:
-        await message.answer("Путевой лист создан")
+        post = await create_waybill(web, message.from_user.id)
+        if post == True:
+            await message.answer("Путевой лист создан")
+            sql = DateBase()
+            await sql.update_item_by_id("users", "status", "false", message.from_user.id)
+            sql.db.close()
+        elif post == False:
+            await message.answer("Ошибка при создании путевого листа, повторите попытку через 1 минуту", reply_markup=kb.menu)
+            await state.finish()
+            return
+        await asyncio.sleep(5)
+        await message.answer("Прохождение предрейсового медосмотра")
+        auth_md, web_med = await auth_med(message.from_user.username)
+        if auth_md == False:
+            await state.finish()
+            await message.answer("Ошибка при прохождении медосмотра, обратитесь к администратору", reply_markup=kb.menu)
+            return
+        await asyncio.sleep(5)
+        aprove_md, done_time_md = await aprove_weybill_med(web_med, message.from_user.id, message.from_user.username)
+        if aprove_md == True:
+            await message.answer(f"Предрейсовый медосмотр пройден в {done_time_md}, мед. работник - Ворфоломеева О.А.")
+        elif aprove_md == False:
+            await message.answer("Ошибка при прохождении медосмотра, обратитесь к администратору", reply_markup=kb.menu)
+            await state.finish()
+            return
+        logger.info("Типа задержка")
+        await asyncio.sleep(1)
+        #await asyncio.sleep(random.randint(240, 420))
+        await message.answer("Прохождение предрейсового техосмотра")
+        auth_mh, web_mech = await auth_mech(message.from_user.username)
+        if auth_mh == False:
+            await state.finish()
+            await message.answer("Ошибка при прохождении техосмотра, обратитесь к администратору", reply_markup=kb.menu)
+            return
+        await asyncio.sleep(5)
+        aprove_mh, done_time_mh, done_time_db = await aprove_weybill_mech(web_mech, message.from_user.id, message.from_user.username, probeg)
+        if aprove_mh == True:
+            await message.answer(f"Предрейсовый техосмотр пройден в {done_time_mh}, механик - Соколов Е.А. Выезд разрешен", reply_markup=kb.menu)
+        elif aprove_mh == False:
+            await message.answer("Ошибка при прохождении техосмотра, обратитесь к администратору", reply_markup=kb.menu)
+            await state.finish()
+            return
+        sql = DateBase()
+        await sql.update_item_by_id("users", "start_at", done_time_db, message.from_user.id)
+        sql.db.close()
+
+        # Очистка ресурсов
+        try:
+            web_med.browser.quit()
+            web_mech.browser.quit()
+            web.browser.quit()
+            sql.db.close()
+        except:
+            pass
+        finally:
+            await state.finish()
+    except Exception as ex:
+        logger.info(f" {start_weybills_org.__name__}: Произошла ошибка {ex}")
+        await message.answer("Произошла ошибка во время начала смены, обратитесь к администратору")
+        await state.finish()
+        return
+
+async def start_weybills_ip(message: types.Message, state: FSMContext):
+    try:
+        if message.text.lower() != "да":
+            await message.answer("Прежде всего необходимо создать новый путевой лист", reply_markup=kb.menu)
+            await state.finish()
+            return
         sql = DateBase()
         await sql.update_item_by_id("users", "status", "false", message.from_user.id)
         sql.db.close()
-    elif post == False:
-        await message.answer("Ошибка при создании путевого листа, повторите попытку через 1 минуту")
-        await state.finish()
-        return
-    await asyncio.sleep(5)
-    await message.answer("Прохождение предрейсового медосмотра")
-    auth_md, web_med = await auth_med(message.from_user.username)
-    if auth_md == False:
-        await state.finish()
-        await message.answer("Ошибка при прохождении медосмотра, обратитесь к администратору")
-        return
-    await asyncio.sleep(5)
-    aprove_md, done_time_md = await aprove_weybill_med(web_med, message.from_user.id, message.from_user.username)
-    if aprove_md == True:
-        await message.answer(f"Предрейсовый медосмотр пройден в {done_time_md}, мед. работник - Ворфоломеева Н.А.")
-    elif aprove_md == False:
-        await message.answer("Ошибка при прохождении медосмотра, обратитесь к администратору")
-        await state.finish()
-        return
-    logger.info("Типа задержка")
-    await asyncio.sleep(1)
-    #await asyncio.sleep(random.randint(240, 420))
-    await message.answer("Прохождение предрейсового техосмотра")
-    auth_mh, web_mech = await auth_mech(message.from_user.username)
-    if auth_mh == False:
-        await state.finish()
-        await message.answer("Ошибка при прохождении техосмотра, обратитесь к администратору")
-        return
-    await asyncio.sleep(5)
-    aprove_mh, done_time_mh, done_time_db = await aprove_weybill_mech(web_mech, message.from_user.id, message.from_user.username, probeg)
-    if aprove_mh == True:
-        await message.answer(f"Предрейсовый техосмотр пройден в {done_time_mh}, механик - Соколов Е.А. Выезд разрешен", reply_markup=kb.menu)
-    elif aprove_mh == False:
-        await message.answer("Ошибка при прохождении техосмотра, обратитесь к администратору")
-        await state.finish()
-        return
-    sql = DateBase()
-    logger.info(f"Дебаг время - {done_time_db}")
-    #sql.cur.execute(f"UPDATE users SET start_at = '{done_time_db}' WHERE id = '{message.from_user.id}'")
-    #sql.db.commit()
-    await sql.update_item_by_id("users", "start_at", done_time_db, message.from_user.id)
-    sql.db.close()
-
-    # Очистка ресурсов
-    try:
-        web_med.browser.quit()
-        web_mech.browser.quit()
-        web.browser.quit()
+        await message.answer("Прохождение предрейсового медосмотра", reply_markup=kb.ReplyKeyboardRemove())
+        sql = DateBase()
+        probeg = await sql.select_item_where_id("users", "probeg", message.from_user.id)
         sql.db.close()
-    except:
-        pass
-    finally:
-        await state.finish()
-
-async def start_weybills_ip(message: types.Message, state: FSMContext):
-    await message.answer("Прохождение предрейсового медосмотра")
-    sql = DateBase()
-    probeg = await sql.select_item_where_id("users", "probeg", message.from_user.id)
-    sql.db.close()
-    auth_md, web_med = await auth_med(message.from_user.username)
-    if auth_md == False:
-        await state.finish()
-        await message.answer("Ошибка при прохождении медосмотра, обратитесь к администратору")
-        return
-    await asyncio.sleep(5)
-    aprove_md, done_time_md = await aprove_weybill_med(web_med, message.from_user.id, message.from_user.username)
-    if aprove_md == True:
-        await message.answer(f"Предрейсовый медосмотр пройден в {done_time_md}, мед. работник - Ворфоломеева Н.А.")
-    elif aprove_md == False:
-        await message.answer("Ошибка при прохождении медосмотра, обратитесь к администратору")
-        await state.finish()
-        return
-    logger.info("Типа задерэка ")
-    await asyncio.sleep(1)
-    # await asyncio.sleep(random.randint(240, 420))
-    await message.answer("Прохождение предрейсового техосмотра")
-    auth_mh, web_mech = await auth_mech(message.from_user.username)
-    if auth_mh == False:
-        await state.finish()
-        await message.answer("Ошибка при прохождении техосмотра, обратитесь к администратору")
-        return
-    await asyncio.sleep(5)
-    aprove_mh, done_time_mh, done_time_db = await aprove_weybill_mech(web_mech, message.from_user.id,
-                                                                      message.from_user.username, probeg)
-    if aprove_mh == True:
-        await message.answer(f"Предрейсовый техосмотр пройден в {done_time_mh}, механик - Соколов Е.А. Выезд разрешен",
-                             reply_markup=kb.menu)
-    elif aprove_mh == False:
-        await message.answer("Ошибка при прохождении техосмотра, обратитесь к администратору")
-        await state.finish()
-        return
-    sql = DateBase()
-    logger.info(f"Дебаг время - {done_time_db}")
-    #sql.cur.execute(f"UPDATE users SET start_at = '{done_time_db}' WHERE id = '{message.from_user.id}'")
-    #sql.db.commit()
-    await sql.update_item_by_id("users", "start_at", done_time_db, message.from_user.id)
-    sql.db.close()
-
-    # Очистка ресурсов
-    try:
-        web_med.browser.quit()
-        web_mech.browser.quit()
+        auth_md, web_med = await auth_med(message.from_user.username)
+        if auth_md == False:
+            await state.finish()
+            await message.answer("Ошибка при прохождении медосмотра, обратитесь к администратору", reply_markup=kb.menu)
+            return
+        await asyncio.sleep(5)
+        aprove_md, done_time_md = await aprove_weybill_med(web_med, message.from_user.id, message.from_user.username)
+        if aprove_md == True:
+            await message.answer(f"Предрейсовый медосмотр пройден в {done_time_md}, мед. работник - Ворфоломеева О.А.")
+        elif aprove_md == False:
+            await message.answer("Ошибка при прохождении медосмотра, обратитесь к администратору", reply_markup=kb.menu)
+            await state.finish()
+            return
+        logger.info("Типа задерэка ")
+        await asyncio.sleep(1)
+        #await asyncio.sleep(random.randint(240, 420))
+        await message.answer("Прохождение предрейсового техосмотра")
+        auth_mh, web_mech = await auth_mech(message.from_user.username)
+        if auth_mh == False:
+            await state.finish()
+            await message.answer("Ошибка при прохождении техосмотра, обратитесь к администратору", reply_markup=kb.menu)
+            return
+        await asyncio.sleep(5)
+        aprove_mh, done_time_mh, done_time_db = await aprove_weybill_mech(web_mech, message.from_user.id,
+                                                                          message.from_user.username, probeg)
+        if aprove_mh == True:
+            await message.answer(f"Предрейсовый техосмотр пройден в {done_time_mh}, механик - Соколов Е.А. Выезд разрешен",
+                                 reply_markup=kb.menu)
+        elif aprove_mh == False:
+            await message.answer("Ошибка при прохождении техосмотра, обратитесь к администратору", reply_markup=kb.menu)
+            await state.finish()
+            return
+        sql = DateBase()
+        await sql.update_item_by_id("users", "start_at", done_time_db, message.from_user.id)
         sql.db.close()
-    except:
-        pass
-    finally:
-        await state.finish()
 
+        # Очистка ресурсов
+        try:
+            web_med.browser.quit()
+            web_mech.browser.quit()
+            sql.db.close()
+        except:
+            pass
+        finally:
+            await state.finish()
+    except Exception as ex:
+        logger.info(f" {start_weybills_org.__name__}: Произошла ошибка {ex}")
+        sql = DateBase()
+        await sql.update_item_by_id("users", "status", "true", message.from_user.id)
+        sql.db.close()
+        await message.answer("Произошла ошибка во время начала смены, создайте новый путевой лист или обратитесь к администратору", reply_markup=kb.menu)
+        await state.finish()
+        return
 
 """
     Закрытие путевого листа
@@ -706,53 +749,72 @@ async def end_change_probeg(message: types.Message, state: FSMContext):
     elif sub == True:
         pass
 
+    """
+       Проверка на открытую смену
+    """
+    sub = await check_status(message.from_user.id, message.from_user.username)
+    if sub == True:
+        await message.answer("Смена закрыта", reply_markup=kb.menu)
+        await state.finish()
+        return
+    elif sub == False:
+        pass
+
     await States.wait_end_weybills.set()
-    await message.answer("Напишите ваш текущий пробег", reply_markup=kb.sub_menu)
+    await message.answer("Напишите ваш текущий пробег", reply_markup=kb.ReplyKeyboardRemove())
     logger.info(f"Функция {__name__} завершена {message.from_user.username} в {time.strftime('%X')}")
 
 async def end_weybills(message: types.Message, state: FSMContext):
-    await state.update_data(probeg=message.text.lower())
-    user_data = await state.get_data()
-    probeg = user_data['probeg']
-    sql = DateBase()
-    await sql.update_item_by_id("users", "probeg", probeg, message.from_user.id)
-    sql.db.close()
-    await message.answer(f"Пробег обновлен", reply_markup=kb.sub_menu)
-
-    await message.answer("Прохождение послерейсового медосмотра")
-    auth_md, web_med = await auth_med(message.from_user.username)
-    if auth_md == False:
-        await state.finish()
-        await message.answer("Ошибка при прохождении медосмотра, обратитесь к администратору")
-        return
-    await asyncio.sleep(5)
-    data_time = await close_waybill_med(web_med, message.from_user.id, message.from_user.username)
-    await message.answer(f"Послерейсовый медосмотр пройден в {data_time}, мед. работник - Ворфоломеева Н.А.")
-
-    await message.answer("Прохождение послерейсового техосмотра")
-    auth_mh, web_mech = await auth_mech(message.from_user.username)
-    if auth_mh == False:
-        await state.finish()
-        await message.answer("Ошибка при прохождении техосмотра, обратитесь к администратору")
-        return
-    await asyncio.sleep(5)
-    data_time, data_end = await close_waybill_mech(web_mech, message.from_user.id, message.from_user.username, probeg)
-    await message.answer(f"Послерейсовый техосмотр пройден в {data_time}, механик - Соколов Е.А.")
-    await message.answer("Смена закрыта", reply_markup=kb.menu)
-    sql = DateBase()
-    await sql.update_item_by_id("users", "status", 'true', message.from_user.id)
-    await sql.update_item_by_id("users", "end_at", data_end, message.from_user.id)
-    sql.db.close()
-
-    # Очистка ресурсов
     try:
-        web_med.browser.quit()
-        web_mech.browser.quit()
+        await state.update_data(probeg=message.text.lower())
+        user_data = await state.get_data()
+        probeg = user_data['probeg']
+        sql = DateBase()
+        await sql.update_item_by_id("users", "probeg", probeg, message.from_user.id)
         sql.db.close()
-    except:
-        pass
-    finally:
+        await message.answer(f"Пробег обновлен", reply_markup=kb.ReplyKeyboardRemove())
+
+        await message.answer("Прохождение послерейсового медосмотра")
+        auth_md, web_med = await auth_med(message.from_user.username)
+        if auth_md == False:
+            await state.finish()
+            await message.answer("Ошибка при прохождении медосмотра, обратитесь к администратору", reply_markup=kb.menu)
+            return
+        await asyncio.sleep(5)
+        data_time = await close_waybill_med(web_med, message.from_user.id, message.from_user.username)
+        await message.answer(f"Послерейсовый медосмотр пройден в {data_time}, мед. работник - Ворфоломеева О.А.")
+        logger.info("Типа задержка")
+        await asyncio.sleep(1)
+        # await asyncio.sleep(random.randint(240, 420))
+        await message.answer("Прохождение послерейсового техосмотра")
+        auth_mh, web_mech = await auth_mech(message.from_user.username)
+        if auth_mh == False:
+            await state.finish()
+            await message.answer("Ошибка при прохождении техосмотра, обратитесь к администратору", reply_markup=kb.menu)
+            return
+        await asyncio.sleep(5)
+        data_time, data_end = await close_waybill_mech(web_mech, message.from_user.id, message.from_user.username, probeg)
+        await message.answer(f"Послерейсовый техосмотр пройден в {data_time}, механик - Соколов Е.А.")
+        await message.answer("Смена закрыта", reply_markup=kb.menu)
+        sql = DateBase()
+        await sql.update_item_by_id("users", "status", 'true', message.from_user.id)
+        await sql.update_item_by_id("users", "end_at", data_end, message.from_user.id)
+        sql.db.close()
+
+        # Очистка ресурсов
+        try:
+            web_med.browser.quit()
+            web_mech.browser.quit()
+            sql.db.close()
+        except:
+            pass
+        finally:
+            await state.finish()
+    except Exception as ex:
+        logger.info(f" {start_weybills_org.__name__}: Произошла ошибка {ex}")
+        await message.answer("Произошла ошибка во время закрытия смены, обратитесь к администратору")
         await state.finish()
+        return
 
 """
     Удаление путевых листов
@@ -811,7 +873,19 @@ async def delete_weybills_force(message: types.Message, state: FSMContext):
     elif sub == True:
         pass
 
-    await message.answer("Удаление предыдущего путевго листа", reply_markup=kb.sub_menu)
+    """
+        Проверка на открытую смену
+    """
+    sub = await check_status(message.from_user.id, message.from_user.username)
+    if sub == True:
+        await message.answer("Путевой лист закрыт", reply_markup=kb.menu)
+        await state.finish()
+        return
+    elif sub == False:
+        pass
+
+
+    await message.answer("Удаление предыдущего путевго листа. Ожидайте...", reply_markup=kb.sub_menu)
     res, web = await auth_park(message.from_user.id, message.from_user.username)
     if res == False:
         await state.finish()
@@ -827,33 +901,49 @@ async def delete_weybills_force(message: types.Message, state: FSMContext):
     end_time = datetime.datetime.strptime(await sql.select_item_where_id("users", "end_at", message.from_user.id),
                                           '%Y-%m-%d %H:%M:%S.%f')
     print(end_time - cheat)
-    await sql.update_item_by_id("users", "end_at", end_time - cheat, message.from_user.id)
-    await sql.update_item_by_id("users", "status", 'true', message.from_user.id)
+    """
+           Откатить время окончания смены если удаляется закрытий лист, в ином случае изменить только статус 
+    """
+    sub = await check_status(message.from_user.id, message.from_user.username)
+    if sub == True:
+        await sql.update_item_by_id("users", "end_at", end_time - cheat, message.from_user.id)
+        logger.info("Изменено время окончания")
+    elif sub == False:
+        await sql.update_item_by_id("users", "status", 'true', message.from_user.id)
+        logger.info("Изменен статус листа")
+
+    #await sql.update_item_by_id("users", "end_at", end_time - cheat, message.from_user.id)
+    #await sql.update_item_by_id("users", "status", 'true', message.from_user.id)
     sql.db.close()
 
 async def cmd_cancel(message: types.Message, state: FSMContext):
-    sql = DateBase()
-    sql.cur.execute(f"SELECT id FROM users WHERE id = '{message.from_user.id}'")
-    if sql.cur.fetchone() is None:
-        await message.answer(f"Вы не авторизованы, зарегистрируйтесь", reply_markup=kb.reg_menu)
+
+    """
+                Проверка на регистрацию
+        """
+    reg = await check_id(message.from_user.id, message.from_user.username)
+    if reg == None:
+        await message.answer("Вы не зарегистрированы", reply_markup=kb.reg_menu)
+        await state.finish()
         return
-    sql.cur.execute(f"SELECT until FROM users WHERE id = '{message.from_user.id}'")
-    until = datetime.datetime.strptime(sql.cur.fetchone()[0], '%d-%m-%Y')
-    now = datetime.datetime.now().strftime('%d-%m-%Y')
-    now = datetime.datetime.strptime(now, '%d-%m-%Y')
-    if (now < until) == True:
-        print("Подписка активна")
-        sql.db.close()
+    elif reg == True:
         pass
-    else:
+
+    """
+        Проверка на подписку
+    """
+    sub = await check_sub(message.from_user.id, message.from_user.username)
+    if sub == False:
         await message.answer("Ваша подписка истекла, обратитесь к администратору что бы продлить подписку",
                              reply_markup=kb.reg_menu)
-        print("Подписка не активна")
-        sql.db.close()
+        await state.finish()
         return
+    elif sub == True:
+        pass
 
     await state.finish()
     await message.answer("Отмена", reply_markup=kb.menu)
+    return
 
 async def pr(message: types.Message, state: FSMContext):
     await message.answer("Пробег")

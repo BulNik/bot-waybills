@@ -23,7 +23,10 @@ class DateBase():
     async def select_item_where_name(self, db, item, name):
         print(f"{__name__} {item} {id}")
         self.cur.execute(f"SELECT {item} FROM {db} WHERE name = '{name}'")
-        res = self.cur.fetchone()[0]
+        #res = self.cur.fetchone()[0]
+        res = self.cur.fetchone()
+        if res is not None:
+            res = res[0]
         print(res)
 
         return res

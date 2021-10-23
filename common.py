@@ -33,6 +33,7 @@ async def cmd_start(message: types.Message):
 async def cmd_cancel(message: types.Message, state: FSMContext):
     await state.finish()
     await message.answer("Отмена", reply_markup=kb.menu)
+    return
 
 
 

@@ -19,7 +19,7 @@ class Web():
         # Инциируем объект опций для Хрома, чтобы иметь возможность подключить расширение
         options = webdriver.ChromeOptions()
         #options.add_argument("user-data-dir=selenium")
-        options.add_argument('--headless')
+        #options.add_argument('--headless')
         # Запускаем Браузер (Веб Драйвер Хрома) с указанием места скачивания самого файла драйвера
         self.browser = webdriver.Chrome(executable_path='chromedriver', chrome_options=options, service_args=["--verbose", "--log-path=chrome.log"])
 
@@ -32,6 +32,7 @@ class Web():
         elem.click()
         time.sleep(5)
 
+
     async def click_button_only_text(self, selector, text):
         WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.XPATH, f'//{selector}[text()="{text}"]')))
         elem = self.browser.find_element_by_xpath(f'//{selector}[text()="{text}"]')
@@ -41,6 +42,14 @@ class Web():
     async def click_button_with_text(self, selector, cl, text):
         WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.XPATH, f'//{selector}[@class="{cl}" and text()="{text}"]')))
         elem = self.browser.find_element_by_xpath(f'//{selector}[@class="{cl}" and text()="{text}"]')
+        elem.click()
+        time.sleep(10)
+    async def click_button_with_text_test(self, selector, cl, text):
+        #//span[span[@class='MuiButton-label']
+        WebDriverWait(self.browser, 10).until(EC.element_to_be_clickable((By.XPATH, f'//span[@class="MuiButton-label"]')))
+        elem = self.browser.find_element_by_xpath(f'//span[@class="MuiButton-label"]')
+        #WebDriverWait(self.browser, 10).until(EC.element_to_be_clickable((By.XPATH, f'//{selector}[@class="{cl}" and text()="{text}"]')))
+        #elem = self.browser.find_element_by_xpath(f'//{selector}[@class="{cl}" and text()="{text}"]')
         elem.click()
         time.sleep(10)
 

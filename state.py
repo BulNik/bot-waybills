@@ -271,6 +271,10 @@ async def start_reg(message: types.Message, state: FSMContext):
 
 async def reg_name(message: types.Message, state: FSMContext):
     logger.info(f"Функцию {__name__} вызвал {message.from_user.username} в {time.strftime('%X')}")
+    if message.text.lower() == "отменить":
+        await message.answer(f"Отмена", reply_markup=kb.reg_menu)
+        await state.finish()
+        return
     sql = DateBase()
     await state.update_data(name=message.text)
     user_data = await state.get_data()
@@ -278,14 +282,18 @@ async def reg_name(message: types.Message, state: FSMContext):
     res = await sql.select_item_where_name("users", "dogovor", user_data['name'])
     sql.db.close()
     if str(res) == "org":
-        await message.answer("Напишите телефонный номер парка, начиная с 8", reply_markup=kb.sub_menu)
+        await message.answer("Напишите телефонный номер парка, начиная с 8...", reply_markup=kb.sub_menu)
     elif str(res) == "ip":
-        await message.answer("Напишите свой телефонный номер, зарегистрированный в КИС АРТ, начиная с 8", reply_markup=kb.sub_menu)
+        await message.answer("Напишите свой телефонный номер, зарегистрированный в КИС АРТ, начиная с 8...", reply_markup=kb.sub_menu)
     await States.wait_reg_ph_number.set()
     logger.info(f"Функция {__name__} завершена {message.from_user.username} в {time.strftime('%X')}")
 
 async def reg_number(message: types.Message, state: FSMContext):
-    if len(message.text.lower()) != 11:
+    if message.text.lower() == "отменить":
+        await message.answer(f"Отмена", reply_markup=kb.reg_menu)
+        await state.finish()
+        return
+    elif len(message.text.lower()) != 11:
         await message.answer("Телефонный номер должен состоять из 11 символов")
         return
     logger.info(f"Функцию {__name__} вызвал {message.from_user.username} в {time.strftime('%X')}")
@@ -382,7 +390,15 @@ async def create_waybill(web, user_id):
     name = await sql.select_item_where_id("users", "name", user_id)
     sql.db.close()
     await web.get_page(url_waybills)
-    await web.click_button_with_text("span", "MuiButton-label", "Добавить")
+    await web.wait_page_load()
+    try:
+        await web.click_button_with_text_test("span", "MuiButton-label", "Добавить")
+    except:
+        pass
+    try:
+        await web.click_button_with_text_test("span", "MuiButton-label", "Добавить")
+    except:
+        logger.info("Не вышло добавить смену")
     await web.wait_page_load()
     await web.set_form_input_enter_click("driver.id", name)
     await asyncio.sleep(10)
@@ -536,6 +552,13 @@ async def start_change_probeg(message: types.Message, state: FSMContext):
     logger.info(f"Функция {__name__} завершена {message.from_user.username} в {time.strftime('%X')}")
 
 async def start_check(message: types.Message, state: FSMContext):
+    if message.text.lower() == "отменить":
+        await message.answer(f"Отмена", reply_markup=kb.reg_menu)
+        await state.finish()
+        return
+    elif message.text.lower().isdigit() == False:
+        await message.answer(f"пробег должен состоять только из цифр. Вы ввели: {message.text.lower()}")
+        return
     await state.update_data(probeg=message.text.lower())
     user_data = await state.get_data()
     probeg = user_data['probeg']
@@ -575,12 +598,12 @@ async def start_check(message: types.Message, state: FSMContext):
             end_time = datetime.datetime.strptime(await sql.select_item_where_id("users", "end_at", message.from_user.id),'%Y-%m-%d %H:%M:%S.%f')
             await sql.update_item_by_id("users", "end_at", end_time - cheat, message.from_user.id)
             sql.db.close()
-            await message.answer("Подтвердите создание путевого листа. Ожидайте...", reply_markup=kb.sub_menu_org)
+            await message.answer("Подтвердите создание путевого листа", reply_markup=kb.sub_menu_org)
             await States.wait_start_org.set()
 
 async def start_weybills_org(message: types.Message, state: FSMContext):
-    try:
-        await message.answer("Путевой лист в процессе создания", reply_markup=kb.ReplyKeyboardRemove())
+    #try:
+        await message.answer("Путевой лист в процессе создания. Ожидайту...", reply_markup=kb.ReplyKeyboardRemove())
         sql = DateBase()
         probeg = await sql.select_item_where_id("users", "probeg", message.from_user.id)
         sql.db.close()
@@ -590,7 +613,6 @@ async def start_weybills_org(message: types.Message, state: FSMContext):
             await message.answer("Ошибка при создании путевого листа, повторите попытку через 1 минуту", reply_markup=kb.menu)
             return
         await asyncio.sleep(5)
-
         post = await create_waybill(web, message.from_user.id)
         if post == True:
             await message.answer("Путевой лист создан")
@@ -602,6 +624,8 @@ async def start_weybills_org(message: types.Message, state: FSMContext):
             await state.finish()
             return
         await asyncio.sleep(5)
+
+
         await message.answer("Прохождение предрейсового медосмотра")
         auth_md, web_med = await auth_med(message.from_user.username)
         if auth_md == False:
@@ -616,6 +640,8 @@ async def start_weybills_org(message: types.Message, state: FSMContext):
             await message.answer("Ошибка при прохождении медосмотра, обратитесь к администратору", reply_markup=kb.menu)
             await state.finish()
             return
+
+
         logger.info("Типа задержка")
         await asyncio.sleep(1)
         #await asyncio.sleep(random.randint(240, 420))
@@ -626,6 +652,8 @@ async def start_weybills_org(message: types.Message, state: FSMContext):
             await message.answer("Ошибка при прохождении техосмотра, обратитесь к администратору", reply_markup=kb.menu)
             return
         await asyncio.sleep(5)
+
+
         aprove_mh, done_time_mh, done_time_db = await aprove_weybill_mech(web_mech, message.from_user.id, message.from_user.username, probeg)
         if aprove_mh == True:
             await message.answer(f"Предрейсовый техосмотр пройден в {done_time_mh}, механик - Соколов Е.А. Выезд разрешен", reply_markup=kb.menu)
@@ -647,15 +675,18 @@ async def start_weybills_org(message: types.Message, state: FSMContext):
             pass
         finally:
             await state.finish()
-    except Exception as ex:
-        logger.info(f" {start_weybills_org.__name__}: Произошла ошибка {ex}")
-        await message.answer("Произошла ошибка во время начала смены, обратитесь к администратору")
-        await state.finish()
-        return
+    #except Exception as ex:
+    ##    logger.info(f" {start_weybills_org.__name__}: Произошла ошибка {ex}")
+    #    await message.answer("Произошла ошибка во время начала смены, обратитесь к администратору", reply_markup=kb.menu)
+    #    await state.finish()
+    #    return
 
 async def start_weybills_ip(message: types.Message, state: FSMContext):
-    try:
-        if message.text.lower() != "да":
+        if message.text.lower() != "отменить":
+            await message.answer("отмена", reply_markup=kb.menu)
+            await state.finish()
+            return
+        elif message.text.lower() != "да":
             await message.answer("Прежде всего необходимо создать новый путевой лист", reply_markup=kb.menu)
             await state.finish()
             return
@@ -711,14 +742,14 @@ async def start_weybills_ip(message: types.Message, state: FSMContext):
             pass
         finally:
             await state.finish()
-    except Exception as ex:
-        logger.info(f" {start_weybills_org.__name__}: Произошла ошибка {ex}")
-        sql = DateBase()
-        await sql.update_item_by_id("users", "status", "true", message.from_user.id)
-        sql.db.close()
-        await message.answer("Произошла ошибка во время начала смены, создайте новый путевой лист или обратитесь к администратору", reply_markup=kb.menu)
-        await state.finish()
-        return
+    #except Exception as ex:
+    ##    logger.info(f" {start_weybills_ip.__name__}: Произошла ошибка {ex}")
+    #    sql = DateBase()
+    #    await sql.update_item_by_id("users", "status", "true", message.from_user.id)
+    #    sql.db.close()
+    #    await message.answer("Произошла ошибка во время начала смены, создайте новый путевой лист или обратитесь к администратору", reply_markup=kb.menu)
+    #    await state.finish()
+    #    return
 
 """
     Закрытие путевого листа
@@ -765,6 +796,13 @@ async def end_change_probeg(message: types.Message, state: FSMContext):
     logger.info(f"Функция {__name__} завершена {message.from_user.username} в {time.strftime('%X')}")
 
 async def end_weybills(message: types.Message, state: FSMContext):
+    if message.text.lower() == "отменить":
+        await message.answer(f"Отмена", reply_markup=kb.reg_menu)
+        await state.finish()
+        return
+    elif message.text.lower().isdigit() == False:
+        await message.answer(f"пробег должен состоять только из цифр. Вы ввели {message.text.lower()}")
+        return
     try:
         await state.update_data(probeg=message.text.lower())
         user_data = await state.get_data()
@@ -812,7 +850,7 @@ async def end_weybills(message: types.Message, state: FSMContext):
             await state.finish()
     except Exception as ex:
         logger.info(f" {start_weybills_org.__name__}: Произошла ошибка {ex}")
-        await message.answer("Произошла ошибка во время закрытия смены, обратитесь к администратору")
+        await message.answer("Произошла ошибка во время закрытия смены, обратитесь к администратору", reply_markup=kb.menu)
         await state.finish()
         return
 

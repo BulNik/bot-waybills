@@ -44,19 +44,20 @@ async def run_check(bot):
             try:
                 if delta < e_time:
                     await bot.send_message(id, e_msg)
-                    await asyncio.sleep(86400)
+                    #await asyncio.sleep(86400)
                 elif delta < s_time:
                     await bot.send_message(id, s_msg)
-                    await asyncio.sleep(86400)
+                    #await asyncio.sleep(86400)
                 elif delta < f_time:
                     await bot.send_message(id, f_msg)
-                    await asyncio.sleep(86400)
+                    #await asyncio.sleep(86400)
             except ChatNotFound:
                 print(f"Пользователь с id {id} не начинал диалог с ботом")
-                await asyncio.sleep(86400)
+                #await asyncio.sleep(86400)
             except BotBlocked:
                 print(f"Пользователь с id {id} заблокировал бота")
                 await asyncio.sleep(86400)
+        await asyncio.sleep(86400)
 
 
 if __name__ == '__main__':
